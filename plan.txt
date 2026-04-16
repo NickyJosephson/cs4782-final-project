@@ -1,0 +1,105 @@
+Deadlines:
+  - Poster presentation: April 30, 2026
+  - 2-page report + GitHub repo: May 12, 2026
+
+=== WHAT WE ARE REPRODUCING ===
+
+Result 1 — Reproduce Table 1 (Section 4.1)
+  Train a deblurring cold diffusion model and evaluate on held-out test data.
+  Compare three conditions:
+    (a) Degraded — the blurry input itself (baseline)
+    (b) Direct — one-shot reconstruction R(D(x0, T), T)
+    (c) Sampled — Algorithm 2 iterative reconstruction
+  Metrics: FID, SSIM, RMSE
+  Datasets: MNIST, CIFAR-10, CelebA
+  Expected finding: Sampled beats Direct on FID; Direct beats Sampled on SSIM/RMSE.
+
+Result 2 — Algorithm 1 vs Algorithm 2 stability comparison
+  Using the same trained model from Result 1, run Algorithm 1 (naive sampling)
+  and compare against Algorithm 2 (improved sampling).
+  Show:
+    (a) Visual comparison — Algorithm 1 produces artifacts / drifts,
+        Algorithm 2 produces clean outputs
+    (b) Metrics comparison — FID/SSIM/RMSE for both algorithms
+    (c) Intermediate step visualization — save images at several steps
+        during sampling for both algorithms to show drift vs stability
+  Note: The paper does NOT include a quantitative Alg 1 vs Alg 2 comparison
+  on deblurring. This is a novel contribution from our side.
+
+Result 3 (Bonus) — Image generation using blur (Section 5.2)
+  Using the same trained deblurring model:
+    (a) Fit a GMM to the channel-wise mean RGB colors of the training set
+    (b) Sample a random (R,G,B) from the GMM
+    (c) Expand to a flat-color image
+    (d) Run Algorithm 2 to "deblur" into a new face/image
+    (e) Add symmetry-breaking noise (std 0.002) and show improvement
+  Compare FID against hot diffusion if time permits.
+  This is beyond what the proposal committed to — shows "iterations."
+
+
+=== TEAM ASSIGNMENTS ===
+
+Kevin Rodriguez (kjr64)    — Degradation operator
+Julius Samwer (jcs557)     — U-Net architecture
+Nicky Josephson (noj5)     — Datasets + data loading
+Tudor Braicu (tb574)       — Sampling (Alg 1 & 2) + generation
+
+
+=== IMPLEMENTATION PLAN ===
+
+Step 1: Build the pipeline (start with MNIST)
+  - Implement the U-Net restoration network (ResBlocks, attention, skip connections)  [Julius]
+  - Implement the Gaussian blur degradation operator D(x0, t)                        [Kevin]
+  - Implement the training loop (L1 loss, Adam optimizer)                            [Everyone]
+  - Implement EMA model tracking                                                     [Everyone]
+  - Implement Algorithm 1 and Algorithm 2 sampling                                   [Tudor]
+  - Implement evaluation (FID, SSIM, RMSE)                                           [Tudor]
+  - Dataset loading + preprocessing + train/test splits                              [Nicky]
+  - Train on MNIST first to catch bugs fast                                          [Everyone]
+
+Step 2: Scale to CIFAR-10 and CelebA
+  - Adjust blur schedules per dataset:                                               [Kevin]
+      MNIST:    11x11 kernel, T=40, sigma=7 (fixed)
+      CIFAR-10: 11x11 kernel, sigma = 0.01*t + 0.35 (linear)
+      CelebA:   15x15 kernel, sigma grows exponentially at rate 0.01
+  - Set up CIFAR-10 and CelebA data pipelines                                       [Nicky]
+  - Train on CIFAR-10 and CelebA (reduced steps: 50k-200k on Colab Pro)             [Everyone]
+
+Step 3: Evaluate and produce results
+  - Run Degraded / Direct / Sampled (Alg 2) on test sets → Table 1 reproduction     [Tudor]
+  - Run Algorithm 1 on test sets → stability comparison                              [Tudor]
+  - Save intermediate sampling images for both algorithms                            [Tudor]
+  - Plot metrics vs sampling step (stability curve)                                  [Tudor]
+
+Step 4: Generation (bonus)
+  - Fit GMM on training set channel means                                            [Tudor]
+  - Generate new images via Algorithm 2 from sampled flat colors                     [Tudor]
+  - Test with and without symmetry-breaking noise                                    [Tudor]
+
+Step 5: Poster + Report
+  - Create poster (36" x 24" landscape PDF)                                          [Everyone]
+  - Write 2-page report (emphasis on Methodology, Results, Reflections)              [Everyone]
+  - Set up GitHub repo structure (code/, data/, results/, poster/, report/)           [Nicky]
+  - Write README                                                                     [Everyone]
+
+
+=== TRAINING HYPERPARAMETERS ===
+
+Optimizer:               Adam
+Learning rate:           2e-5
+Batch size:              32
+Gradient accumulation:   every 2 steps (effective batch = 64)
+EMA decay:               0.995, updated every 10 gradient steps
+Target training steps:   50k-200k (reduced from paper's 700k)
+Loss:                    L1 (sum of absolute pixel differences)
+GPU:                     Google Colab Pro (1x GPU)
+
+
+=== WHAT SUCCESS LOOKS LIKE ===
+
+- Table 1 numbers don't need to exactly match the paper (rubric says this).
+  We need to show the TREND: Sampled FID < Direct FID, Direct SSIM > Sampled SSIM.
+- Algorithm 1 vs 2 comparison shows visible difference in stability.
+- Generation produces recognizable (if imperfect) images from flat colors.
+- Thoughtful analysis of any discrepancies.
+- The rubric rewards iterations and honest reflection over perfect numbers.
