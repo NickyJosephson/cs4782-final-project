@@ -1,0 +1,73 @@
+import torch
+from torch import nn
+import numpy as np
+import torchgeometry as tgm
+
+class Degradation(nn.Module):
+    """
+    A class that applies degradation to an image. Applies sequential convolutional layers with Gaussian blur kernels.
+
+    Args:
+        degradation_type (str): noise vs blur (normal vs 'cold' degradation).
+        blur_routine (str): how the parameters of the convolution layers change.
+        kernel_size (int): gaussian blur kernel dim.
+        kernel_std (float): gaussian blur kernel std.
+        image_channels (int): input channels.
+        num_timesteps (int): number of timesteps / gaussian blur layers to apply.
+    """
+    def __init__(self, degradation_type="gaussian_blur", blur_routine = "Exponential", kernel_size = 3, kernel_std = 0.1, image_channels = 3, num_timesteps = 1000):
+        super().__init__()
+
+        self.degradation_type = degradation_type
+        self.blur_routine = blur_routine
+        self.kernel_size = kernel_size
+        self.kernel_std = kernel_std
+        self.image_channels = image_channels
+        self.num_timesteps = num_timesteps
+
+        self.kernels = self.get_kernels()
+    def blur_kernel(self, dim, std):
+        return tgm.image.get_gaussian_kernel2d((dim, dim), (std, std))
+    def get_conv(self, std):
+        if self.degradation_type == 'gaussian_noise':
+            raise NotImplementedError
+        elif self.degradation_type == 'gaussian_blur':
+            padding = self.kernel_size // 2
+            conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=self.kernel_size, padding=padding,
+                             groups=self.image_channels, bias=False) # Look into these params
+        with torch.no_grad():
+            kernel = self.blur_kernel(self.kernel_size, std)
+            kernel = torch.unsqueeze(kernel, 0)
+            kernel = torch.unsqueeze(kernel, 0)
+            kernel = kernel.repeat(self.image_channels, 1, 1, 1)
+            conv_layer.weight.data = kernel
+        return conv_layer
+    def get_kernels(self):
+        kernels = []
+        for i in range(self.num_timesteps):
+            if self.blur_routine == "Incremental":
+                kernels.append(self.get_conv(self.kernel_std * (i+1)))
+            if self.blur_routine == "Exponential":
+                exp_std = np.exp(self.kernel_std * i)
+                kernels.append(self.get_conv(exp_std))
+        return kernels
+    def forward(self, x, show_all_timesteps = False):
+        if show_all_timesteps:
+            timesteps = []
+            timesteps.append(x)
+        degrade_layers = self.kernels
+        for i in range(len(degrade_layers)):
+            conv_layer = degrade_layers[i]
+            x = conv_layer(x)
+            if show_all_timesteps:
+                timesteps.append(x)
+        if show_all_timesteps:
+            return timesteps
+        return x
+    def forward_to_step(self, x, t):
+        for i in range(t + 1):
+            x = self.kernels[i](x)
+        return x
+    
+    def __str__(self):
+        return f"{self.degradation_type} with {self.blur_routine} routine"
