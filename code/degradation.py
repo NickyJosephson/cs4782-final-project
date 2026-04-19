@@ -5,7 +5,7 @@ import torchgeometry as tgm
 
 class Degradation(nn.Module):
     """
-    A class that applies degradation to an image. Applies sequential convolutional layers with Gaussian blur kernels.
+    Wraps the degradation process of an image. Applies sequential convolutional layers with Gaussian blur kernels.
 
     Args:
         degradation_type (str): noise vs blur (normal vs 'cold' degradation).
@@ -32,9 +32,9 @@ class Degradation(nn.Module):
         if self.degradation_type == 'gaussian_noise':
             raise NotImplementedError
         elif self.degradation_type == 'gaussian_blur':
-            padding = self.kernel_size // 2
+            padding = (self.kernel_size - 1) // 2
             conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=self.kernel_size, padding=padding,
-                             groups=self.image_channels, bias=False) # Look into these params
+                             groups=self.image_channels, bias=False, padding_mode="circular") # Look into these params
         with torch.no_grad():
             kernel = self.blur_kernel(self.kernel_size, std)
             kernel = torch.unsqueeze(kernel, 0)
@@ -52,6 +52,13 @@ class Degradation(nn.Module):
                 kernels.append(self.get_conv(exp_std))
         return kernels
     def forward(self, x, show_all_timesteps = False):
+        """
+        Applies degradation to an input image for self.num_timesteps timesteps.
+
+        Args:
+            x (torch.Tensor): input image tensor of shape (B, C, H, W).
+            show_all_timesteps (bool): If True, returns a list of tensors representing the output at each timestep. Otherwise, returns only final degraded image.
+        """
         if show_all_timesteps:
             timesteps = []
             timesteps.append(x)
@@ -65,6 +72,12 @@ class Degradation(nn.Module):
             return timesteps
         return x
     def forward_to_step(self, x, t):
+        """
+        Applies degradation to an input image for t timesteps.
+
+        Args:
+            x (torch.Tensor): input image tensor of shape (B, C, H, W).
+        """
         for i in range(t + 1):
             x = self.kernels[i](x)
         return x
