@@ -15,11 +15,12 @@ class Degradation(nn.Module):
         image_channels (int): input channels.
         num_timesteps (int): number of timesteps / gaussian blur layers to apply.
     """
-    def __init__(self, degradation_type="gaussian_blur", blur_routine = "Exponential", kernel_size = 3, kernel_std = 0.1, image_channels = 3, num_timesteps = 1000):
+    def __init__(self, degradation_type="gaussian_blur", blur_routine = "Exponential", padding_mode = "circular", kernel_size = 3, kernel_std = 0.1, image_channels = 3, num_timesteps = 1000):
         super().__init__()
 
         self.degradation_type = degradation_type
         self.blur_routine = blur_routine
+        self.padding_mode = padding_mode
         self.kernel_size = kernel_size
         self.kernel_std = kernel_std
         self.image_channels = image_channels
@@ -28,15 +29,17 @@ class Degradation(nn.Module):
         self.kernels = self.get_kernels()
     def blur_kernel(self, dim, std):
         return tgm.image.get_gaussian_kernel2d((dim, dim), (std, std))
-    def get_conv(self, std):
+    def get_conv(self, std, kernel_size = None, padding_mode = "circular"):
+        if kernel_size is None:
+            kernel_size = self.kernel_size
         if self.degradation_type == 'gaussian_noise':
             raise NotImplementedError
         elif self.degradation_type == 'gaussian_blur':
-            padding = (self.kernel_size - 1) // 2
-            conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=self.kernel_size, padding=padding,
-                             groups=self.image_channels, bias=False, padding_mode="circular") # Look into these params
+            padding = (kernel_size - 1) // 2
+            conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=kernel_size, padding=padding,
+                             groups=self.image_channels, bias=False, padding_mode=padding_mode) # Look into these params
         with torch.no_grad():
-            kernel = self.blur_kernel(self.kernel_size, std)
+            kernel = self.blur_kernel(kernel_size, std)
             kernel = torch.unsqueeze(kernel, 0)
             kernel = torch.unsqueeze(kernel, 0)
             kernel = kernel.repeat(self.image_channels, 1, 1, 1)
@@ -47,9 +50,18 @@ class Degradation(nn.Module):
         for i in range(self.num_timesteps):
             if self.blur_routine == "Incremental":
                 kernels.append(self.get_conv(self.kernel_std * (i+1)))
-            if self.blur_routine == "Exponential":
+            elif self.blur_routine == "Exponential":
                 exp_std = np.exp(self.kernel_std * i)
                 kernels.append(self.get_conv(exp_std))
+            elif self.blur_routine == "Exponential_Reflect":
+                exp_std = np.exp(self.kernel_std * i)
+                kernels.append(self.get_conv(exp_std, padding_mode="reflect"))
+            elif self.blur_routine == "Constant":
+                kernels.append(self.get_conv(self.kernel_std))
+            elif self.blur_routine == "Special6":
+                kernel_size = 11
+                kernel_std = i/100 + 0.35
+                kernels.append(self.get_conv(std=kernel_std, kernel_size=kernel_size, padding_mode="reflect"))
         return kernels
     def forward(self, x, show_all_timesteps = False):
         """
@@ -78,7 +90,7 @@ class Degradation(nn.Module):
         Args:
             x (torch.Tensor): input image tensor of shape (B, C, H, W).
         """
-        for i in range(t + 1):
+        for i in range(t):
             x = self.kernels[i](x)
         return x
     

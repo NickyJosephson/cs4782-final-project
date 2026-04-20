@@ -89,6 +89,36 @@ class TestConvProperties:
             expected_kernel = d.get_conv(expected_std)
             total_difference = torch.abs(layer.weight - expected_kernel.weight).sum().item()
             assert total_difference < 1e-5
+    
+    # Test kernel std stays constant in constant mode
+    def test_constant_std_increases(self):
+        kernel_std = 0.5
+        d = Degradation(num_timesteps=5, kernel_std=kernel_std, blur_routine="Constant")
+        for i, layer in enumerate(d.kernels):
+            expected_std = kernel_std
+            expected_kernel = d.get_conv(expected_std)
+            total_difference = torch.abs(layer.weight - expected_kernel.weight).sum().item()
+            assert total_difference < 1e-5
+    
+    # Test special 6 routine std is as expected
+    def test_special6_std_increases(self):
+        kernel_std = 0.5
+        d = Degradation(num_timesteps=5, kernel_std=kernel_std, blur_routine="Special6")
+        for i, layer in enumerate(d.kernels):
+            expected_std = i/100 + 0.35
+            expected_kernel = d.get_conv(expected_std, kernel_size=11, padding_mode="reflect")
+            total_difference = torch.abs(layer.weight - expected_kernel.weight).sum().item()
+            assert total_difference < 1e-5
+    
+    # Test kernel std increases exponentially in exponential reflect mode
+    def test_exponentialreflect_std_increases(self):
+        kernel_std = 0.5
+        d = Degradation(num_timesteps=5, kernel_std=kernel_std, blur_routine="Exponential_Reflect")
+        for i, layer in enumerate(d.kernels):
+            expected_std = np.exp(kernel_std * i)
+            expected_kernel = d.get_conv(expected_std, padding_mode="reflect")
+            total_difference = torch.abs(layer.weight - expected_kernel.weight).sum().item()
+            assert total_difference < 1e-5
 
     def test_weights_sum_to_one(self):
         d = Degradation(num_timesteps=5)
