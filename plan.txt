@@ -58,10 +58,10 @@ Step 1: Build the pipeline (start with MNIST)
   - Train on MNIST first to catch bugs fast                                          [Everyone]
 
 Step 2: Scale to CIFAR-10 and CelebA
-  - Adjust blur schedules per dataset:                                               [Kevin]
-      MNIST:    11x11 kernel, T=40, sigma=7 (fixed)
-      CIFAR-10: 11x11 kernel, sigma = 0.01*t + 0.35 (linear)
-      CelebA:   15x15 kernel, sigma grows exponentially at rate 0.01
+  - Adjust blur schedules per dataset (verified against reference repo README):       [Kevin]
+      MNIST:    11x11 kernel, T=20,  sigma=7.0,            blur_routine=Constant
+      CIFAR-10: 11x11 kernel, T=50,  sigma=0.01*t + 0.35,  blur_routine=Special_6_routine (reflect pad)
+      CelebA:   15x15 kernel, T=200, sigma=exp(0.01*t),    blur_routine=Exponential_reflect
   - Set up CIFAR-10 and CelebA data pipelines                                       [Nicky]
   - Train on CIFAR-10 and CelebA (reduced steps: 50k-200k on Colab Pro)             [Everyone]
 
