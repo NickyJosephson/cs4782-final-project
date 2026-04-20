@@ -37,7 +37,7 @@ def compute_rmse(image1, image2):
 # run all three reconstruction methods on the test set and compute metrics in a table like format.
 # exactly as table 1, we have degraded, direct and sammpled (with alg1 and alg2), so one extra column!
 
-def evaluate_model(model, degradation, test_loader, t):
+def evaluate_model(model, degradation, test_loader, t, device= "cpu"):
     all_real= []
     all_degraded= []
     all_direct= []
@@ -50,8 +50,8 @@ def evaluate_model(model, degradation, test_loader, t):
     model.eval()
     with torch.no_grad():
         for images, _ in test_loader: 
-            x_0 =images
-            x_t =degradation(x_0, t)
+            x_0 =images.to(device)
+            x_t =degradation.forward_to_step(x_0, t)
             rec_direct= direct_reconstruct(model, x_t, t)
             
             rec_alg1= algorithm1_sample(model, degradation, x_t, t)

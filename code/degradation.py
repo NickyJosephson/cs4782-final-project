@@ -26,7 +26,8 @@ class Degradation(nn.Module):
         self.image_channels = image_channels
         self.num_timesteps = num_timesteps
 
-        self.kernels = self.get_kernels()
+        self.kernels = nn.ModuleList(self.get_kernels())
+
     def blur_kernel(self, dim, std):
         return tgm.image.get_gaussian_kernel2d((dim, dim), (std, std))
     def get_conv(self, std, kernel_size = None, padding_mode = "circular"):
