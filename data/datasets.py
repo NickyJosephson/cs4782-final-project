@@ -63,6 +63,18 @@ def _mnist_transform():
     return transforms.ToTensor()
 
 
+class _HFCelebA(Dataset):
+    def __init__(self, hf_ds, transform):
+        self._hf_ds = hf_ds
+        self._transform = transform
+
+    def __len__(self) -> int:
+        return len(self._hf_ds)
+
+    def __getitem__(self, i):
+        return self._transform(self._hf_ds[i]["image"]), 0
+
+
 def _download_with_progress(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -123,9 +135,17 @@ def get_dataset(name: DatasetName, split: Split, augment: bool = False,) -> Data
         return Subset(base, train_idx if split == "train" else val_idx)
 
     if name in ("celeba", "celeba128"):
+        try:
+            from datasets import load_dataset as _hf_load_dataset
+        except ImportError as e:
+            raise ImportError(
+                "CelebA loading requires the HuggingFace `datasets` package. "
+                "Install with: pip install datasets"
+            ) from e
         image_size = 64 if name == "celeba" else 128
-        tv_split = "valid" if split == "val" else split
-        return datasets.CelebA(str(root), split=tv_split, download=True, transform=_celeba_transform(image_size))
+        hf_split = "valid" if split == "val" else split
+        hf_ds = _hf_load_dataset("flwrlabs/celeba", split=hf_split)
+        return _HFCelebA(hf_ds, _celeba_transform(image_size))
 
     if name == "afhq":
         subdir = "train" if split == "train" else "val"
