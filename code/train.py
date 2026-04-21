@@ -37,7 +37,8 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
     start_step= 0
     loss_history= []
     if resume and ckpt_path.exists(): 
-        ckpt = torch.load(ckpt["model"])
+        ckpt = torch.load(ckpt_path, map_location = device)
+        model.load_state_dict(ckpt["model"])
         ema_model.load_state_dict(ckpt["ema"])
         optimizer.load_state_dict(ckpt["optimizer"])
         start_step= ckpt.get("step", 0)
@@ -82,6 +83,41 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
         if (step + 1) % ema_update_every == 0:
             with torch.no_grad():
                 for p_ema, p in zip(ema_model.parameters(), model.parameters()):
-                    p_ema.mul_(ema_decay).add_()
+                    p_ema.mul_(ema_decay).add_(p, alpha= 1 - ema_decay)
+
+        if (step + 1) % log_every == 0: 
+            avg= running_loss / log_every
+
+            loss_history.append((step+ 1, avg))
+            print(f" [train] step= {step+1:>7} loss= {avg:.4f}")
+            running_loss= 0.0
+        
+        # checkpoint
+        if ((step + 1) % save_every ) == 0: 
+            torch.save({
+                "model": model.state_dict(),
+                "ema": ema_model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "step": step + 1,
+                "loss_history": loss_history,
+                "dataset": dataset_name,
+            }, ckpt_path)
+
+            print(f"[train] saved ckpt at step {step + 1}")
+        
+    # final save
+    torch.save({
+        "model": model.state_dict(),
+        "ema": ema_model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "step": num_steps,
+        "loss_history": loss_history,
+        "dataset": dataset_name,
+    }, ckpt_path)
+    print(f"[train] done.")
+
+    return loss_history
+
+        
 
 
