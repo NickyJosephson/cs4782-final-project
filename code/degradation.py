@@ -63,6 +63,8 @@ class Degradation(nn.Module):
                 kernel_size = 11
                 kernel_std = i/100 + 0.35
                 kernels.append(self.get_conv(std=kernel_std, kernel_size=kernel_size, padding_mode="reflect"))
+            else:
+                raise ValueError(f"unknown blur_routine: {self.blur_routine}")
         return kernels
     def forward(self, x, show_all_timesteps = False):
         """

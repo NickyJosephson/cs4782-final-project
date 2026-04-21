@@ -64,22 +64,18 @@ def evaluate_model(model, degradation, test_loader, t, device= "cpu"):
             all_alg1.append(rec_alg1)
             all_alg2.append(rec_alg2)
 
-            for i in range(x_0.shape[0]):
-                img_real= x_0[i].unsqueeze(0)
-
-
-                ssim_direct.append(compute_ssim( rec_direct[i].unsqueeze(0), img_real))
-                ssim_alg1.append(compute_ssim(rec_alg1[i].unsqueeze(0), img_real))
-                ssim_alg2.append(compute_ssim(rec_alg2[i].unsqueeze(0), img_real))
-                rmse_direct.append(compute_rmse(rec_direct[i], x_0[i]))
-                rmse_alg1.append(compute_rmse(rec_alg1[i], x_0[i]))
-                rmse_alg2.append(compute_rmse(rec_alg2[i], x_0[i]))
-
         all_real = torch.cat(all_real)
         all_degraded= torch.cat(all_degraded)
         all_direct= torch.cat(all_direct)
         all_alg1= torch.cat(all_alg1)
         all_alg2= torch.cat(all_alg2)
+
+        ssim_direct= compute_ssim(all_direct.clamp(0, 1), all_real.clamp(0, 1))
+        ssim_alg1= compute_ssim(all_alg1.clamp(0, 1), all_real.clamp(0, 1))
+        ssim_alg2 = compute_ssim(all_alg2.clamp(0, 1), all_real.clamp(0, 1))
+        rmse_direct= compute_rmse(all_direct.clamp(0, 1), all_real.clamp(0, 1))
+        rmse_alg1 = compute_rmse(all_alg1.clamp(0, 1), all_real.clamp(0, 1))
+        rmse_alg2 = compute_rmse(all_alg2.clamp(0, 1), all_real.clamp(0, 1))
 
         real_fid= to_fid(all_real)
         degraded_fid = to_fid(all_degraded)
@@ -97,18 +93,18 @@ def evaluate_model(model, degradation, test_loader, t, device= "cpu"):
         }, 
         "direct": {
             "fid": compute_fid(real_fid, direct_fid),
-            "ssim": float(np.mean(ssim_direct)), 
-            "rmse": float(np.mean(rmse_direct)),
+            "ssim": ssim_direct, 
+            "rmse": rmse_direct,
         },
         "alg1":{
             "fid": compute_fid(real_fid, alg1_fid),
-            "ssim": float(np.mean(ssim_alg1)), 
-            "rmse": float(np.mean(rmse_alg1)),
+            "ssim": ssim_alg1, 
+            "rmse": rmse_alg1,
         },
         "alg2":{
             "fid": compute_fid(real_fid, alg2_fid),
-            "ssim": float(np.mean(ssim_alg2)), 
-            "rmse": float(np.mean(rmse_alg2)),
+            "ssim": ssim_alg2, 
+            "rmse": rmse_alg2,
         },
 
 
