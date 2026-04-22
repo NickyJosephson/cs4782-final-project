@@ -15,12 +15,12 @@ DEGRADATION_CONFIGS= {
 }
 
 # main train loop
-def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", resume= False, device= None):
+def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", data_percent = 1, resume= False, device= None):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[train] dataset= {dataset_name} device= {device}")
 
     # data, model and degradation
-    loader= get_loader(dataset_name, "train", batch_size=batch_size, num_workers= 2, shuffle= True)
+    loader= get_loader(dataset_name, "train", batch_size=batch_size, num_workers= 2, data_percent= data_percent, shuffle= True)
     deg_cfg= DEGRADATION_CONFIGS[dataset_name]
     T = deg_cfg["num_timesteps"]
     degradation= Degradation(**deg_cfg).to(device)

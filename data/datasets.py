@@ -157,8 +157,16 @@ def get_dataset(name: DatasetName, split: Split, augment: bool = False,) -> Data
     raise ValueError(f"unknown dataset: {name}")
 
 
-def get_loader(name: DatasetName, split: Split, batch_size: int, num_workers: int = 4, augment: bool = False, shuffle: Optional[bool] = None) -> DataLoader:
+def get_loader(name: DatasetName, split: Split, batch_size: int, num_workers: int = 4, data_percent = 1.0, augment: bool = False, shuffle: Optional[bool] = None) -> DataLoader:
     ds = get_dataset(name, split, augment=augment)
+
+    if data_percent < 1:
+        n = len(ds)
+        k = int(n * data_percent)
+        g = torch.Generator().manual_seed(0)
+        indices = torch.randperm(n, generator=g)[:k].tolist()
+        ds = Subset(ds, indices)
+
     if shuffle is None:
         shuffle = split == "train"
     return DataLoader(
