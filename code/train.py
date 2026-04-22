@@ -15,13 +15,17 @@ DEGRADATION_CONFIGS= {
 }
 
 # main train loop
-def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", data_percent = 1, resume= False, device= None):
+def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", data_percent = 1, resume= False, device= None, discrete= False):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[train] dataset= {dataset_name} device= {device}")
 
     # data, model and degradation
     loader= get_loader(dataset_name, "train", batch_size=batch_size, num_workers= 2, data_percent= data_percent, shuffle= True)
-    deg_cfg= DEGRADATION_CONFIGS[dataset_name]
+    deg_cfg= DEGRADATION_CONFIGS[dataset_name].copy()
+    if discrete: 
+        deg_cfg.update(dict(
+            kernel_size= 27, num_timesteps= 300, kernel_std= 0.01, blur_routine= "Exponential"
+        ))
     T = deg_cfg["num_timesteps"]
     degradation= Degradation(**deg_cfg).to(device)
     model= build_unet(dataset_name).to(device)
@@ -33,7 +37,8 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
     optimizer= Adam(model.parameters(), lr= lr)
 
     #resume if needed
-    ckpt_path= pathlib.Path(ckpt_dir) / f"{dataset_name}.pt"
+    suffix = "_gen" if discrete else ""
+    ckpt_path= pathlib.Path(ckpt_dir) / f"{dataset_name}{suffix}.pt"
     start_step= 0
     loss_history= []
     if resume and ckpt_path.exists(): 
@@ -70,6 +75,12 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
                 degradation.forward_to_step(x_0[i:i+1], int(t_batch[i])).squeeze(0)
                 for i in range(B)
             ])
+            
+            if discrete: 
+                is_max_t= (t_batch == T)
+                if is_max_t.any():
+                    means= x_t[is_max_t].mean(dim=(2,3), keepdim= True)
+                    x_t[is_max_t] = means.expand_as(x_t[is_max_t])
 
             x_hat_0 = model(x_t, t_batch)
             loss= F.l1_loss(x_hat_0, x_0) / grad_accum_steps
