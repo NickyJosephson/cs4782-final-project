@@ -38,74 +38,51 @@ def compute_rmse(image1, image2):
 # exactly as table 1, we have degraded, direct and sammpled (with alg1 and alg2), so one extra column!
 
 def evaluate_model(model, degradation, test_loader, t, device= "cpu"):
-    all_real= []
-    all_degraded= []
-    all_direct= []
-    all_alg1= []
-    all_alg2= []
-
-    ssim_direct, ssim_alg1, ssim_alg2 = [], [],[]
-    rmse_direct, rmse_alg1, rmse_alg2= [], [], []
-
+    methods= ["degraded", "direct", "alg1", "alg2"]
+    
+    fid= {m: FrechetInceptionDistance(feature=2048).to(device) for m in methods}
+    ssim= {m: StructuralSimilarityIndexMeasure(data_range= 1.0).to(device) for m in methods}
+    
+    sse= {m: 0.0 for m in methods}
+    n_pix= {m:0 for m in methods}
+    
     model.eval()
     with torch.no_grad():
         for images, _ in test_loader: 
-            x_0 =images.to(device)
-            x_t =degradation.forward_to_step(x_0, t)
-            rec_direct= direct_reconstruct(model, x_t, t)
+            x_0 = images.to(device)
+            x_t= degradation.forward_to_step(x_0, t)
             
-            rec_alg1= algorithm1_sample(model, degradation, x_t, t)
-            rec_alg2 = algorithm2_sample(model, degradation, x_t, t)
-
-            all_real.append(x_0)
-            all_degraded.append(x_t)
-            all_direct.append(rec_direct)
-
-            all_alg1.append(rec_alg1)
-            all_alg2.append(rec_alg2)
-
-        all_real = torch.cat(all_real)
-        all_degraded= torch.cat(all_degraded)
-        all_direct= torch.cat(all_direct)
-        all_alg1= torch.cat(all_alg1)
-        all_alg2= torch.cat(all_alg2)
-
-        ssim_direct= compute_ssim(all_direct.clamp(0, 1), all_real.clamp(0, 1))
-        ssim_alg1= compute_ssim(all_alg1.clamp(0, 1), all_real.clamp(0, 1))
-        ssim_alg2 = compute_ssim(all_alg2.clamp(0, 1), all_real.clamp(0, 1))
-        rmse_direct= compute_rmse(all_direct.clamp(0, 1), all_real.clamp(0, 1))
-        rmse_alg1 = compute_rmse(all_alg1.clamp(0, 1), all_real.clamp(0, 1))
-        rmse_alg2 = compute_rmse(all_alg2.clamp(0, 1), all_real.clamp(0, 1))
-
-        real_fid= to_fid(all_real)
-        degraded_fid = to_fid(all_degraded)
-        direct_fid= to_fid(all_direct)
-        alg1_fid= to_fid(all_alg1)
-        alg2_fid= to_fid(all_alg2)
+            recs= {
+                "degraded": x_t,
+                "direct": direct_reconstruct(model, x_t, t),
+                "alg1": algorithm1_sample(model, degradation, x_t, t),
+                "alg2": algorithm2_sample(model, degradation, x_t, t),
+            }
+            
+            real_u8= to_fid(x_0)
+            x0_clamped= x_0.clamp(0, 1)
+            
+            for m, r in recs.items():
+                r_clamped = r.clamp(0, 1)
+                
+                fid[m].update(real_u8, real= True)
+                fid[m].update(to_fid(r), real= False)
+                
+                ssim[m].update(r_clamped, x0_clamped)
+                sse[m] += torch.sum((r_clamped - x0_clamped) ** 2).item()
+                n_pix[m] += x0_clamped.numel()
+                
+            del x_0, x_t, recs, real_u8, x0_clamped
+            if device == "cuda":
+                torch.cuda.empty_cache()
+                
+        return{
+            m: {
+                "fid": fid[m].compute().item(),
+                "ssim": ssim[m].compute().item(),
+                "rmse": (sse[m] / n_pix[m]) ** 0.5,
+            }
+            
+            for m in methods
+        }
         
-        ssim_degraded= compute_ssim(all_degraded.clamp(0, 1), all_real.clamp(0, 1))
-        rmse_degraded= compute_rmse(all_degraded.clamp(0, 1), all_real.clamp(0, 1))
-    return{
-        "degraded":{
-            "fid": compute_fid(real_fid, degraded_fid),
-            "ssim": ssim_degraded, 
-            "rmse": rmse_degraded,
-        }, 
-        "direct": {
-            "fid": compute_fid(real_fid, direct_fid),
-            "ssim": ssim_direct, 
-            "rmse": rmse_direct,
-        },
-        "alg1":{
-            "fid": compute_fid(real_fid, alg1_fid),
-            "ssim": ssim_alg1, 
-            "rmse": rmse_alg1,
-        },
-        "alg2":{
-            "fid": compute_fid(real_fid, alg2_fid),
-            "ssim": ssim_alg2, 
-            "rmse": rmse_alg2,
-        },
-
-
-    }
