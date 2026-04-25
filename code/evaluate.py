@@ -18,7 +18,8 @@ def to_fid(x):
 #both inputs should be tensors of shape (N, 3, H, W) with values in [0, 255]
 
 def compute_fid(real_images, generated_images):
-    fid= FrechetInceptionDistance(feature=2048)
+    device = real_images.device
+    fid= FrechetInceptionDistance(feature=2048).to(device)
     fid.update(real_images, real=True)
     fid.update(generated_images, real=False)
 
@@ -26,7 +27,8 @@ def compute_fid(real_images, generated_images):
 
 # another way of comparing similarity between two images is SSIM
 def compute_ssim(image1, image2):
-    ssim= StructuralSimilarityIndexMeasure(data_range= 1.0)
+    device = image1.device
+    ssim= StructuralSimilarityIndexMeasure(data_range= 1.0).to(device)
     return ssim(image1, image2).item()
 
 # root squared pixel error between two images, both inputs should be tensors of the same shaepe with val in [0, 1]
