@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cold Diffusion — Poster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #fafaf7;
+    --paper-2: #f3f2ec;
+    --ink: #1a1a1a;
+    --ink-2: #4a4a4a;
+    --ink-3: #8a8a85;
+    --rule: #c9c9c2;
+    --accent: oklch(0.72 0.09 230);
+    --accent-soft: oklch(0.93 0.04 230);
+    --warn: oklch(0.72 0.12 30);
+    --hand: 'IBM Plex Sans', sans-serif;
+    --hand-bold: 'Space Grotesk', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #2a2a28; color: var(--ink); font-family: var(--hand); }
+
+  /* ---------- Chrome ---------- */
+  .chrome {
+    position: sticky; top: 0; z-index: 50;
+    background: #1f1f1d; color: #f3f2ec;
+    border-bottom: 1px solid #000;
+    padding: 14px 24px 12px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .chrome h1 { margin: 0; font-family: var(--hand-bold); font-size: 18px; letter-spacing: 0.5px; }
+  .chrome .sub { font-family: var(--mono); font-size: 11px; color: #b8b8b0; }
+
+  /* ---------- Stage ---------- */
+  .stage { padding: 32px 24px 80px; display: flex; justify-content: center; }
+  .poster-shell {
+    background: #ddd; padding: 18px; border-radius: 4px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .poster-meta {
+    font-family: var(--mono); font-size: 10px; color: #555;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin: 0 4px 10px; display: flex; justify-content: space-between;
+  }
+
+  .poster-clip { overflow: hidden; }
+  .poster {
+    width: 1800px; height: 1200px;
+    background: var(--paper);
+    position: relative; overflow: hidden;
+    transform-origin: top left;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.012) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.012) 0, transparent 40%);
+  }
+  .poster.with-margin::after {
+    content: ""; position: absolute; inset: 25px;
+    border: 1px dashed rgba(0,0,0,0.18);
+    pointer-events: none; z-index: 1;
+  }
+  .poster > * { position: relative; z-index: 2; }
+
+  /* ---------- Primitives ---------- */
+  .hand { font-family: var(--hand); }
+  .hand-bold { font-family: var(--hand-bold); }
+  .mono { font-family: var(--mono); }
+
+  .box {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    border-radius: 3px;
+    padding: 14px 16px;
+  }
+  .box.dashed { border-style: dashed; border-color: var(--ink-2); }
+  .box.thin { border-width: 1px; }
+  .box.fill { background: var(--paper-2); }
+  .box.accent { border-color: var(--accent); background: var(--accent-soft); }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink); color: var(--paper);
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .tag.accent { background: var(--accent); color: #0a1a25; }
+  .tag.warn { background: var(--warn); color: #2a0c00; }
+
+  .ph {
+    background:
+      repeating-linear-gradient(45deg, var(--paper-2), var(--paper-2) 6px, var(--paper) 6px, var(--paper) 12px);
+    border: 1.5px solid var(--ink-2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+    text-transform: uppercase; letter-spacing: 0.1em; text-align: center;
+  }
+  .ph.cold {
+    background: repeating-linear-gradient(45deg, var(--accent-soft), var(--accent-soft) 6px, var(--paper) 6px, var(--paper) 12px);
+    border-color: var(--accent); color: oklch(0.4 0.09 230);
+  }
+  .ph.with-img { padding: 0; overflow: hidden; background: #000; }
+  .ph.with-img.cold { border-color: var(--accent); }
+  .ph.with-img img {
+    width: 100%; height: 100%; display: block;
+    object-fit: cover;
+    transform: scale(1.18); transform-origin: center;
+    image-rendering: pixelated;
+  }
+
+  /* Section header */
+  .sect {
+    display: flex; align-items: baseline; gap: 10px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .sect .num { font-family: var(--hand-bold); font-size: 26px; color: var(--accent); line-height: 1; }
+  .sect .ttl { font-family: var(--hand-bold); font-size: 26px; color: var(--ink); line-height: 1; letter-spacing: 0.5px; }
+  .sect .hint {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-left: auto;
+  }
+
+  ul.hand-list { list-style: none; margin: 6px 0 0; padding: 0; }
+  ul.hand-list li {
+    font-family: var(--hand); font-size: 18px; line-height: 1.4;
+    color: var(--ink-2); padding-left: 22px; position: relative; margin-bottom: 4px;
+  }
+  ul.hand-list li::before {
+    content: "→"; position: absolute; left: 0; top: 0;
+    font-family: var(--hand-bold); color: var(--accent);
+  }
+  ul.hand-list li.warn::before { color: var(--warn); content: "✱"; }
+
+  .scribble { font-family: var(--hand); font-size: 18px; line-height: 1.35; color: var(--ink-2); }
+  .scribble.dim { color: var(--ink-3); }
+
+  /* ---------- B1 layout ---------- */
+  .b1-root {
+    position: absolute; inset: 40px 50px 50px 50px;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 18px;
+  }
+  .b1-title {
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 24px;
+  }
+  .b1-title .brand { display: flex; align-items: center; gap: 12px; }
+  .b1-title .brand .flake { font-size: 64px; color: var(--accent); }
+  .b1-title .title-main { font-family: var(--hand-bold); font-size: 64px; line-height: 0.95; }
+  .b1-title .title-main .accent { color: var(--accent); }
+  .b1-title .title-sub { font-family: var(--hand); font-size: 22px; color: var(--ink-2); margin-top: 4px; }
+  .b1-authors {
+    font-family: var(--hand); font-size: 13px; color: var(--ink-2);
+    line-height: 1.35; text-align: center; white-space: nowrap;
+  }
+  .b1-authors strong { color: var(--ink); }
+
+  /* Temperature gauge */
+  .b1-gauge {
+    position: relative;
+    height: 120px;
+    background: linear-gradient(90deg,
+      oklch(0.78 0.13 30) 0%,
+      oklch(0.86 0.05 60) 30%,
+      oklch(0.94 0.02 200) 55%,
+      oklch(0.86 0.07 220) 78%,
+      oklch(0.65 0.11 230) 100%);
+    border-radius: 8px;
+    border: 2px solid var(--ink);
+    padding: 18px 24px;
+    overflow: hidden;
+  }
+  .b1-gauge .ticks {
+    position: absolute; inset: 0;
+    display: grid; grid-template-columns: repeat(20, 1fr);
+  }
+  .b1-gauge .ticks > div { border-right: 1px solid rgba(0,0,0,0.18); height: 100%; }
+  .b1-gauge .ticks > div:last-child { border-right: none; }
+  .b1-gauge .labels {
+    position: relative; height: 100%;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    align-items: center; gap: 8px;
+  }
+
+  /* Body 3-column */
+  .b1-body {
+    display: grid;
+    grid-template-columns: 520px minmax(0, 1fr) 520px;
+    gap: 22px;
+    min-height: 0;
+  }
+  .b1-rail { display: flex; flex-direction: column; gap: 16px; }
+  .b1-hero { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .b1-hero .sect.hero-head {
+    width: 100%;
+    align-items: baseline;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+  .b1-hero .sect.hero-head .num,
+  .b1-hero .sect.hero-head .ttl { font-size: 26px; white-space: nowrap; }
+  .b1-hero .sect.hero-head .hint { font-size: 8px; white-space: nowrap; }
+  .b1-hero .hero-card {
+    flex: 1; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden; width: 100%;
+  }
+
+  /* Qualitative grouped grid */
+  .qual-grid { display: grid; grid-template-columns: 100px repeat(6, 78px); justify-content: start; align-items: center; }
+  .qual-grid.bracket { align-items: end; margin-bottom: 2px; }
+  .qual-grid .bracket-fwd {
+    grid-column: 2 / span 3; text-align: center;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+    color: var(--ink-2); text-transform: uppercase;
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 3px; margin-bottom: 2px;
+  }
+  .qual-grid .bracket-rev {
+    grid-column: 5 / span 3; text-align: center;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase;
+    border-bottom: 1.5px solid var(--accent); padding-bottom: 3px; margin-bottom: 2px;
+  }
+  .qual-grid.head { align-items: end; }
+  .qual-grid .col-head { text-align: center; padding-bottom: 4px; }
+  .qual-grid .col-head.rev { color: var(--accent); }
+  .qual-grid .col-head.fwd { color: var(--ink); }
+  .qual-grid .col-head .ttl { font-family: var(--hand-bold); font-size: 12px; line-height: 1.1; }
+  .qual-grid .col-head .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 2px; }
+  .qual-grid .row-label { font-family: var(--hand-bold); font-size: 17px; }
+
+  /* Trajectory grid */
+  .traj-grid { display: flex; flex-direction: column; gap: 10px; }
+  .traj-row { display: grid; grid-template-columns: 100px repeat(6, 78px); justify-content: start; align-items: center; }
+  .traj-row .lbl { font-family: var(--hand-bold); font-size: 17px; line-height: 1.1; }
+  .traj-row .lbl .meta {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.05em; font-weight: normal; margin-top: 2px;
+  }
+
+  /* Drift curves */
+  .drift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .drift-grid img {
+    width: 100%; display: block;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--paper);
+  }
+
+  /* Headline */
+  .headline {
+    padding: 14px; text-align: center;
+  }
+  .headline .num { font-family: var(--hand-bold); font-size: 30px; line-height: 1; }
+  .headline .note { font-family: var(--hand); font-size: 13px; margin-top: 6px; color: var(--ink-2); }
+
+  /* Discrepancy callout */
+  .disc {
+    border: 2px solid var(--ink);
+    padding: 10px;
+    background: var(--paper-2);
+    position: relative;
+    border-radius: 3px;
+  }
+  .disc .tag.warn { position: absolute; top: -10px; left: 14px; }
+  .disc .ttl { font-family: var(--hand-bold); font-size: 18px; margin-top: 4px; margin-bottom: 6px; }
+  .disc ul.hand-list li { font-size: 14px; }
+
+  .refs {
+    margin-top: auto;
+    border-top: 1.5px dashed var(--ink-3);
+    padding-top: 8px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-3); line-height: 1.5;
+  }
+  .refs .head { font-family: var(--hand-bold); font-size: 13px; color: var(--ink); margin-bottom: 4px; }
+
+  /* Results table */
+  .b1-results-wrap {
+    display: grid;
+    grid-template-columns: 520px minmax(0, 1fr) 520px;
+    gap: 22px;
+    margin-top: 8px;
+  }
+  .b1-results-card {
+    padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    background: var(--paper-2);
+    width: 100%; justify-self: center;
+    border: 2px solid var(--ink); border-radius: 3px;
+  }
+  .b1-results-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+  }
+  .b1-results-head .ttl { font-family: var(--hand-bold); font-size: 16px; color: var(--ink); }
+  .b1-results-head .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  table.results {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--hand); font-size: 10px; table-layout: fixed;
+    background: var(--paper);
+    border: 2px solid var(--ink); border-radius: 4px; overflow: hidden;
+  }
+  table.results thead tr.top { background: var(--ink); color: var(--paper); }
+  table.results th { padding: 2px 5px; }
+  table.results th.dataset { text-align: left; font-family: var(--hand-bold); width: 18%; }
+  table.results th.method  { text-align: left; font-family: var(--hand-bold); width: 20%; border-left: 1px solid #444; }
+  table.results th.ours { font-family: var(--hand-bold); border-left: 1px solid #444; background: oklch(0.45 0.09 230); }
+  table.results th.paper { font-family: var(--hand-bold); border-left: 1px solid #444; }
+  table.results thead tr.sub {
+    background: var(--paper-2); color: var(--ink-2);
+    font-family: var(--mono); font-size: 8px;
+  }
+  table.results thead tr.sub th { padding: 2px 4px; }
+  table.results thead tr.sub th.split { border-left: 1px solid var(--ink); }
+  table.results thead tr.sub th.split-rule { border-left: 1px solid var(--rule); }
+  table.results td { padding: 2px 5px; }
+  table.results td.dataset {
+    font-family: var(--hand-bold); font-size: 10px;
+    vertical-align: middle; text-align: left;
+    border-right: 1px solid var(--ink); background: var(--paper-2);
+  }
+  table.results td.method {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-2);
+  }
+  table.results td.val {
+    text-align: center; font-family: var(--mono); font-size: 10px;
+    border-left: 1px solid var(--rule);
+  }
+  table.results td.val.split { border-left: 1px solid var(--ink); }
+  table.results td.val.paper-val { color: var(--ink-3); }
+  table.results tr.alg2-row { background: var(--accent-soft); }
+  table.results tr.alg2-row td.method { color: var(--ink); font-weight: 700; }
+  table.results tr.first-method { border-top: 2px solid var(--ink); }
+  table.results tr.method-row { border-top: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+
+<div class="chrome">
+  <h1>Cold Diffusion · Final Poster</h1>
+  <span class="sub">36″ × 24″ landscape · CS 4782 final</span>
+</div>
+
+<div class="stage">
+  <div class="poster-shell" id="shell">
+    <div class="poster-meta">
+      <span>Variant B1 · Temperature gauge — Cold Diffusion re-implementation</span>
+      <span id="scaleLabel">scale 100%</span>
+    </div>
+    <div class="poster-clip" id="clip">
+      <div class="poster with-margin" id="poster">
+
+        <div class="b1-root">
+
+          <!-- Title strip -->
+          <div class="b1-title">
+            <div class="brand">
+              <span class="flake">❄</span>
+              <div>
+                <div class="title-main">Cold <span class="accent">Diffusion</span></div>
+                <div class="title-sub">do diffusion models actually need noise?</div>
+              </div>
+            </div>
+            <div class="b1-authors">
+              <strong>Nicholas Josephson · Julius Samwer · Kevin Rodriguez · Tudor Braicu</strong><br />
+              <span style="font-size:11px;">Cornell University · CS 4782 Deep Learning · Spring 2026</span>
+            </div>
+            <div style="text-align:right;">
+              <span class="tag accent">RE-IMPLEMENTATION</span>
+              <div class="mono" style="font-size:11px; margin-top:6px; color: var(--ink-2);">
+                Bansal et al. · arXiv:2208.09392
+              </div>
+            </div>
+          </div>
+
+          <!-- Temperature gauge -->
+          <div class="b1-gauge">
+            <div class="ticks">
+              <div></div><div></div><div></div><div></div><div></div>
+              <div></div><div></div><div></div><div></div><div></div>
+              <div></div><div></div><div></div><div></div><div></div>
+              <div></div><div></div><div></div><div></div><div></div>
+            </div>
+            <div class="labels">
+              <div>
+                <div class="mono" style="font-size:11px; color:oklch(0.3 0.13 30); letter-spacing:0.1em;">HOT ◉</div>
+                <div class="hand-bold" style="font-size:22px;">Gaussian noise</div>
+                <div class="hand" style="font-size:14px; color:oklch(0.3 0.13 30);">standard DDPM</div>
+              </div>
+              <div style="text-align:center;">
+                <div class="hand" style="font-size:14px; color:var(--ink-2);">Langevin / variational</div>
+                <div class="mono" style="font-size:11px;">random walks</div>
+              </div>
+              <div style="text-align:center;">
+                <div class="mono" style="font-size:11px; color:var(--ink-3); letter-spacing:0.1em;">↓ THE PAPER'S QUESTION ↓</div>
+                <div class="hand-bold" style="font-size:18px; color:var(--ink);">does the noise matter?</div>
+              </div>
+              <div style="text-align:center;">
+                <div class="hand" style="font-size:14px; color:oklch(0.3 0.09 230);">deterministic ops</div>
+                <div class="mono" style="font-size:11px;">blur · mask · downsample</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="mono" style="font-size:11px; color:oklch(0.3 0.09 230); letter-spacing:0.1em;">◉ COLD</div>
+                <div class="hand-bold" style="font-size:22px;">Gaussian blur</div>
+                <div class="hand" style="font-size:14px; color:oklch(0.3 0.09 230);">our scope ✦</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Three-column body -->
+          <div class="b1-body">
+
+            <!-- Left rail -->
+            <div class="b1-rail">
+              <div>
+                <div class="sect"><span class="num">1.</span><span class="ttl">Motivation</span></div>
+                <ul class="hand-list">
+                  <li>Diffusion ≡ Gaussian noise — by construction.</li>
+                  <li>What if we strip the noise out entirely?</li>
+                  <li>Replace it with a deterministic blur.</li>
+                  <li>Does it still generate? <strong>The paper says yes.</strong></li>
+                </ul>
+              </div>
+
+              <div>
+                <div class="sect"><span class="num">2.</span><span class="ttl">Method</span><span class="hint">U-Net + ℓ₁</span></div>
+                <div class="box" style="padding:10px; font-family:var(--mono); font-size:13px;">
+                  R<sub>θ</sub>(D(x,t), t) ≈ x &nbsp;·&nbsp; D = blur
+                </div>
+                <ul class="hand-list" style="margin-top:8px;">
+                  <li>U-Net: ResBlocks + attention + skip</li>
+                  <li>Sampling: Algorithm 2 (improved)</li>
+                  <li>Training: Adam, lr 2e-5</li>
+                </ul>
+              </div>
+
+              <div>
+                <div class="sect"><span class="num">3.</span><span class="ttl">Datasets</span></div>
+                <div style="display:flex; gap:10px;">
+                  <div class="box thin" style="flex:1; text-align:center; padding:8px;">
+                    <div class="hand-bold" style="font-size:18px;">MNIST</div>
+                    <div class="scribble dim" style="font-size:12px;">28×28 gray</div>
+                  </div>
+                  <div class="box thin" style="flex:1; text-align:center; padding:8px;">
+                    <div class="hand-bold" style="font-size:18px;">CIFAR-10</div>
+                    <div class="scribble dim" style="font-size:12px;">32×32 RGB</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hero center -->
+            <div class="b1-hero">
+              <div class="sect hero-head">
+                <span class="num">★</span>
+                <span class="ttl">Forward freeze → reverse thaw</span>
+              </div>
+              <div class="box hero-card">
+
+                <!-- Bracket row -->
+                <div class="qual-grid bracket">
+                  <div></div>
+                  <div class="bracket-fwd">Forward · degrade x₀</div>
+                  <div class="bracket-rev">Reverse · restore from x_T</div>
+                </div>
+
+                <!-- Header row -->
+                <div class="qual-grid head">
+                  <div></div>
+                  <div class="col-head fwd">
+                    <div class="ttl">Original</div><div class="sub">x₀</div>
+                  </div>
+                  <div class="col-head fwd">
+                    <div class="ttl">Mid-blur</div><div class="sub">D(x₀, T/2)</div>
+                  </div>
+                  <div class="col-head fwd">
+                    <div class="ttl">Fully blurred</div><div class="sub">D(x₀, T) = x_T</div>
+                  </div>
+                  <div class="col-head rev">
+                    <div class="ttl">Direct</div><div class="sub">R(x_T, T)</div>
+                  </div>
+                  <div class="col-head rev">
+                    <div class="ttl">Algo 1</div><div class="sub">naive sampler</div>
+                  </div>
+                  <div class="col-head rev">
+                    <div class="ttl">Algo 2</div><div class="sub">improved sampler</div>
+                  </div>
+                </div>
+
+                <!-- MNIST row -->
+                <div class="qual-grid">
+                  <div class="row-label">MNIST</div>
+                  <div class="ph with-img" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_x0.png" alt="MNIST x0" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_0_xHalf.png" alt="MNIST mid-blur" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_xT.png" alt="MNIST x_T" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_direct.png" alt="MNIST direct" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg1.png" alt="MNIST alg1" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2.png" alt="MNIST alg2" /></div>
+                </div>
+
+                <!-- CIFAR row -->
+                <div class="qual-grid">
+                  <div class="row-label">CIFAR-10</div>
+                  <div class="ph with-img" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_x0.png" alt="CIFAR x0" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_xHalf_v2.png" alt="CIFAR mid-blur" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_xT_v2.png" alt="CIFAR x_T" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_direct.png" alt="CIFAR direct" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_alg1.png" alt="CIFAR alg1" /></div>
+                  <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/cifar10/cifar_17_alg2.png" alt="CIFAR alg2" /></div>
+                </div>
+
+                <!-- Subsection break -->
+                <div style="border-top:1px solid var(--rule); margin-top:2px;"></div>
+                <div style="font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; margin-top:-4px;">
+                  Sampling trajectory · Algo 2
+                </div>
+
+                <!-- Trajectory rows -->
+                <div class="traj-grid">
+                  <div class="traj-row">
+                    <div class="lbl">MNIST<div class="meta">· Algo 2</div></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s5.png" alt="s=5" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s4.png" alt="s=4" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s3.png" alt="s=3" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s2.png" alt="s=2" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s1.png" alt="s=1" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="images/mnist/mnist_42_alg2_s0.png" alt="s=0" /></div>
+                  </div>
+                  <div class="traj-row">
+                    <div class="lbl">CIFAR-10<div class="meta">· Algo 2</div></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s50.png" alt="s=50" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s40.png" alt="s=40" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s30.png" alt="s=30" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s20.png" alt="s=20" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s10.png" alt="s=10" /></div>
+                    <div class="ph with-img cold" style="height:78px; width:78px;"><img src="assets/cifar_alg2_s00.png" alt="s=0" /></div>
+                  </div>
+                </div>
+
+                <div class="scribble dim" style="font-size:11px; font-style:italic; margin-top:2px;">
+                  Top: forward x₀→x_T; reverse compares Direct · Algo 1 · Algo 2. Bottom: Algo 2 running estimate (s = 5→0).
+                </div>
+              </div>
+            </div>
+
+            <!-- Right rail -->
+            <div class="b1-rail">
+              <div>
+                <div class="sect"><span class="num">4.</span><span class="ttl">Algo 1 vs Algo 2</span><span class="hint">drift over sampling</span></div>
+                <div class="box" style="padding:10px; display:flex; flex-direction:column; gap:6px;">
+                  <div class="drift-grid">
+                    <div>
+                      <div class="hand-bold" style="font-size:12px; margin-bottom:2px;">MNIST</div>
+                      <img src="images/mnist_drift_curve.png" alt="MNIST drift curve" />
+                    </div>
+                    <div>
+                      <div class="hand-bold" style="font-size:12px; margin-bottom:2px;">CIFAR-10</div>
+                      <img src="images/cifar10_drift_curve.png" alt="CIFAR-10 drift curve" />
+                    </div>
+                  </div>
+                  <div class="scribble dim" style="font-size:11px; font-style:italic;">
+                    RMSE vs ideal trajectory. Alg 1 (red) drifts; Alg 2 (blue) stays close to the manifold.
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="sect"><span class="num">5.</span><span class="ttl">Headline</span></div>
+                <div class="box accent headline">
+                  <div class="num">↓ FID  __%</div>
+                  <div class="note">[Pop result here when numbers land]</div>
+                </div>
+              </div>
+
+              <div class="box dashed" style="flex:1; padding:14px;">
+                <span class="tag">PLACEHOLDER</span>
+                <div class="scribble dim" style="font-size:14px; margin-top:8px; font-style:italic;">
+                  [ Add content here ]
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantitative results — center column under hero -->
+          <div class="b1-results-wrap">
+            <div></div>
+            <div class="b1-results-card">
+              <div class="b1-results-head">
+                <span class="ttl">✦ Quantitative results</span>
+                <span class="sub">FID / SSIM / RMSE · held-out test set · lower is better</span>
+              </div>
+              <table class="results">
+                <thead>
+                  <tr class="top">
+                    <th class="dataset">Dataset</th>
+                    <th class="method">Method</th>
+                    <th class="ours" colspan="3">Ours</th>
+                    <th class="paper" colspan="3">Paper</th>
+                  </tr>
+                  <tr class="sub">
+                    <th></th>
+                    <th class="split-rule"></th>
+                    <th class="split">FID</th><th class="split-rule">SSIM</th><th class="split-rule">RMSE</th>
+                    <th class="split">FID</th><th class="split-rule">SSIM</th><th class="split-rule">RMSE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- MNIST -->
+                  <tr class="first-method">
+                    <td class="dataset" rowspan="4">MNIST</td>
+                    <td class="method">Degraded (x_T)</td>
+                    <td class="val split">402.96</td><td class="val">0.0112</td><td class="val">0.3068</td>
+                    <td class="val split paper-val">368.56</td><td class="val paper-val">0.1780</td><td class="val paper-val">0.2310</td>
+                  </tr>
+                  <tr class="method-row">
+                    <td class="method">Direct  R(x_T,T)</td>
+                    <td class="val split">23.03</td><td class="val">0.8166</td><td class="val">0.1645</td>
+                    <td class="val split paper-val">4.05</td><td class="val paper-val">0.8230</td><td class="val paper-val">0.1140</td>
+                  </tr>
+                  <tr class="method-row">
+                    <td class="method">Alg 1  naive iter.</td>
+                    <td class="val split">65.63</td><td class="val">0.5445</td><td class="val">0.2817</td>
+                    <td class="val split paper-val">—</td><td class="val paper-val">—</td><td class="val paper-val">—</td>
+                  </tr>
+                  <tr class="method-row alg2-row">
+                    <td class="method">Alg 2  improved</td>
+                    <td class="val split">30.64</td><td class="val">0.6587</td><td class="val">0.2288</td>
+                    <td class="val split paper-val">4.33</td><td class="val paper-val">0.8200</td><td class="val paper-val">0.1150</td>
+                  </tr>
+                  <!-- CIFAR-10 -->
+                  <tr class="first-method">
+                    <td class="dataset" rowspan="4">CIFAR-10</td>
+                    <td class="method">Degraded (x_T)</td>
+                    <td class="val split">313.65</td><td class="val">0.3562</td><td class="val">0.1359</td>
+                    <td class="val split paper-val">358.99</td><td class="val paper-val">0.2790</td><td class="val paper-val">0.1460</td>
+                  </tr>
+                  <tr class="method-row">
+                    <td class="method">Direct  R(x_T,T)</td>
+                    <td class="val split">58.33</td><td class="val">0.6736</td><td class="val">0.0810</td>
+                    <td class="val split paper-val">169.94</td><td class="val paper-val">0.4200</td><td class="val paper-val">0.1520</td>
+                  </tr>
+                  <tr class="method-row">
+                    <td class="method">Alg 1  naive iter.</td>
+                    <td class="val split">96.42</td><td class="val">0.5188</td><td class="val">0.1205</td>
+                    <td class="val split paper-val">—</td><td class="val paper-val">—</td><td class="val paper-val">—</td>
+                  </tr>
+                  <tr class="method-row alg2-row">
+                    <td class="method">Alg 2  improved</td>
+                    <td class="val split">55.75</td><td class="val">0.6634</td><td class="val">0.0826</td>
+                    <td class="val split paper-val">152.76</td><td class="val paper-val">0.4110</td><td class="val paper-val">0.1550</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div></div>
+          </div>
+
+        </div><!-- /.b1-root -->
+
+      </div><!-- /.poster -->
+    </div><!-- /.poster-clip -->
+    <div class="poster-meta" style="margin-top:10px; margin-bottom:0;">
+      <span>1800 × 1200 canvas (50 DPI) · final print 36″ × 24″ @ 300 DPI</span>
+      <span>placeholder content where TBD — fill with real numbers + figures</span>
+    </div>
+  </div><!-- /.poster-shell -->
+</div><!-- /.stage -->
+
+<script>
+  (function () {
+    var poster = document.getElementById('poster');
+    var clip = document.getElementById('clip');
+    var shell = document.getElementById('shell');
+    var label = document.getElementById('scaleLabel');
+    function fit() {
+      var pad = 80;
+      var availW = window.innerWidth - pad;
+      var availH = window.innerHeight - 200;
+      var s = Math.min(availW / 1800, availH / 1200, 1);
+      s = Math.max(0.25, s);
+      poster.style.transform = 'scale(' + s + ')';
+      clip.style.width = (1800 * s) + 'px';
+      clip.style.height = (1200 * s) + 'px';
+      shell.style.width = (1800 * s + 36) + 'px';
+      label.textContent = 'scale ' + Math.round(s * 100) + '%';
+    }
+    fit();
+    window.addEventListener('resize', fit);
+  })();
+</script>
+
+</body>
+</html>
