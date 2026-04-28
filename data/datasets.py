@@ -59,8 +59,18 @@ def _cifar_transform(augment: bool):
     return transforms.Compose(ts)
 
 
-def _mnist_transform():
-    return transforms.ToTensor()
+def _mnist_transform(augment:bool):
+    ts = []
+    if augment:
+        ts += [
+            transforms.Resize((35,35)),
+            transforms.RandomCrop(32),
+            transforms.RandomHorizontalFlip()
+        ]
+    else:
+        ts.append(transforms.Resize((32,32)))
+    ts.append(transforms.ToTensor())
+    return transforms.Compose(ts)
 
 
 class _HFCelebA(Dataset):
@@ -121,8 +131,16 @@ def get_dataset(name: DatasetName, split: Split, augment: bool = False,) -> Data
 
     if name == "mnist":
         if split == "test":
-            return datasets.MNIST(str(root), train=False, download=True, transform=_mnist_transform())
-        base = datasets.MNIST(str(root), train=True, download=True, transform=_mnist_transform())
+            return datasets.MNIST(str(root), train=False, download=True, transform=_mnist_transform(augment=False))
+        use_augment = augment and split == "train"
+        base = datasets.MNIST(str(root), train=True, download=True, transform=_mnist_transform(augment=use_augment))
+        train_idx, val_idx = _carve_val_indices(len(base))
+        return Subset(base, train_idx if split == "train" else val_idx)
+    
+    if name == "mnist_original":
+        if split == "test":
+            return datasets.MNIST(str(root), train=False, download=True, transform=_mnist_transform(augment=False))
+        base = datasets.MNIST(str(root), train=True, download=True, transform=_mnist_transform(augment=False))
         train_idx, val_idx = _carve_val_indices(len(base))
         return Subset(base, train_idx if split == "train" else val_idx)
 
