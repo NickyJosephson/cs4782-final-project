@@ -341,21 +341,25 @@
   table.results tr.alg2-row td.method { color: var(--ink); font-weight: 700; }
   table.results tr.first-method { border-top: 2px solid var(--ink); }
   table.results tr.method-row { border-top: 1px solid var(--rule); }
+
+  /* ---------- Print ---------- */
+  @page { size: 36in 24in; margin: 0; }
+  @media print {
+    html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+    .stage { padding: 0 !important; display: block !important; }
+    .poster-shell { background: none !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; width: auto !important; }
+    .poster-clip { overflow: visible !important; width: auto !important; height: auto !important; }
+    .poster {
+      transform: scale(1.92) !important;
+      transform-origin: top left !important;
+    }
+  }
 </style>
 </head>
 <body>
 
-<div class="chrome">
-  <h1>Cold Diffusion · Final Poster</h1>
-  <span class="sub">36″ × 24″ landscape · CS 4782 final</span>
-</div>
-
 <div class="stage">
   <div class="poster-shell" id="shell">
-    <div class="poster-meta">
-      <span>Variant B1 · Temperature gauge — Cold Diffusion re-implementation</span>
-      <span id="scaleLabel">scale 100%</span>
-    </div>
     <div class="poster-clip" id="clip">
       <div class="poster with-margin" id="poster">
 
@@ -698,22 +702,22 @@
                   <tr class="first-method">
                     <td class="dataset" rowspan="4">MNIST</td>
                     <td class="method">Degraded (x_T)</td>
-                    <td class="val split">402.96</td><td class="val">0.0112</td><td class="val">0.3068</td>
+                    <td class="val split">398.14</td><td class="val">0.0141</td><td class="val">0.2866</td>
                     <td class="val split paper-val">368.56</td><td class="val paper-val">0.1780</td><td class="val paper-val">0.2310</td>
                   </tr>
                   <tr class="method-row">
                     <td class="method">Direct  R(x_T,T)</td>
-                    <td class="val split">23.03</td><td class="val">0.8166</td><td class="val">0.1645</td>
+                    <td class="val split">27.04</td><td class="val">0.8458</td><td class="val">0.1358</td>
                     <td class="val split paper-val">4.05</td><td class="val paper-val">0.8230</td><td class="val paper-val">0.1140</td>
                   </tr>
                   <tr class="method-row">
                     <td class="method">Alg 1  naive iter.</td>
-                    <td class="val split">65.63</td><td class="val">0.5445</td><td class="val">0.2817</td>
+                    <td class="val split">41.16</td><td class="val">0.6234</td><td class="val">0.2374</td>
                     <td class="val split paper-val">—</td><td class="val paper-val">—</td><td class="val paper-val">—</td>
                   </tr>
                   <tr class="method-row alg2-row">
                     <td class="method">Alg 2  improved</td>
-                    <td class="val split">30.64</td><td class="val">0.6587</td><td class="val">0.2288</td>
+                    <td class="val split">22.69</td><td class="val">0.7537</td><td class="val">0.1780</td>
                     <td class="val split paper-val">4.33</td><td class="val paper-val">0.8200</td><td class="val paper-val">0.1150</td>
                   </tr>
                   <!-- CIFAR-10 -->
@@ -748,10 +752,6 @@
 
       </div><!-- /.poster -->
     </div><!-- /.poster-clip -->
-    <div class="poster-meta" style="margin-top:10px; margin-bottom:0;">
-      <span>1800 × 1200 canvas (50 DPI) · final print 36″ × 24″ @ 300 DPI</span>
-      <span>placeholder content where TBD — fill with real numbers + figures</span>
-    </div>
   </div><!-- /.poster-shell -->
 </div><!-- /.stage -->
 
@@ -760,7 +760,6 @@
     var poster = document.getElementById('poster');
     var clip = document.getElementById('clip');
     var shell = document.getElementById('shell');
-    var label = document.getElementById('scaleLabel');
     function fit() {
       var pad = 80;
       var availW = window.innerWidth - pad;
@@ -771,7 +770,6 @@
       clip.style.width = (1800 * s) + 'px';
       clip.style.height = (1200 * s) + 'px';
       shell.style.width = (1800 * s + 36) + 'px';
-      label.textContent = 'scale ' + Math.round(s * 100) + '%';
     }
     fit();
     window.addEventListener('resize', fit);
