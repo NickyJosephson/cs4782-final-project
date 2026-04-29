@@ -583,6 +583,76 @@
 
               <div>
                 <div class="sect"><span class="num">5.</span><span class="ttl">Further experiments / exploration</span></div>
+
+                <!-- Bullets -->
+                <div style="padding-left:22px; position:relative; font-family:var(--hand); font-size:18px; line-height:1.4; color:var(--ink-2); margin-bottom:4px;">
+                  <span style="position:absolute; left:0; font-family:var(--hand-bold); color:var(--accent);">→</span>
+                  Random color removed at each timestep
+                </div>
+                <div style="padding-left:22px; position:relative; font-family:var(--hand); font-size:18px; line-height:1.4; color:var(--ink-2); margin-bottom:10px;">
+                  <span style="position:absolute; left:0; font-family:var(--hand-bold); color:var(--accent);">→</span>
+                  Focused gaussian blur around brighter points
+                </div>
+
+                <!-- Images: 1 · pair · pair -->
+                <div style="display:flex; align-items:flex-end; gap:16px; margin-bottom:10px;">
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                    <div class="hand-bold" style="font-size:12px; color:var(--ink);">Original</div>
+                    <div class="ph cold" style="height:78px; width:78px; font-size:10px;">img</div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                    <div class="hand-bold" style="font-size:12px; color:var(--accent);">Color</div>
+                    <div style="display:flex; gap:6px;">
+                      <div class="ph cold" style="height:78px; width:78px; font-size:10px;">img</div>
+                      <div class="ph cold" style="height:78px; width:78px; font-size:10px;">img</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                    <div class="hand-bold" style="font-size:12px; color:var(--accent);">Blur focused</div>
+                    <div style="display:flex; gap:6px;">
+                      <div class="ph cold" style="height:78px; width:78px; font-size:10px;">img</div>
+                      <div class="ph cold" style="height:78px; width:78px; font-size:10px;">img</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Shared results table — Color and Blur focused as column sections -->
+                <table class="results" style="font-size:9px;">
+                  <thead>
+                    <tr class="top">
+                      <th class="method" style="width:28%;">Method</th>
+                      <th class="ours" colspan="3">Color</th>
+                      <th class="paper" colspan="3">Blur focused</th>
+                    </tr>
+                    <tr class="sub">
+                      <th></th>
+                      <th class="split">FID</th><th class="split-rule">SSIM</th><th class="split-rule">RMSE</th>
+                      <th class="split">FID</th><th class="split-rule">SSIM</th><th class="split-rule">RMSE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="first-method">
+                      <td class="method">Degraded (x_T)</td>
+                      <td class="val split">398.14</td><td class="val">0.0141</td><td class="val">0.2866</td>
+                      <td class="val split">398.14</td><td class="val">0.0141</td><td class="val">0.2866</td>
+                    </tr>
+                    <tr class="method-row">
+                      <td class="method">Direct  R(x_T,T)</td>
+                      <td class="val split">314.47</td><td class="val">0.0276</td><td class="val">0.3457</td>
+                      <td class="val split">385.89</td><td class="val">−0.0094</td><td class="val">0.4333</td>
+                    </tr>
+                    <tr class="method-row">
+                      <td class="method">Alg 1  naive iter.</td>
+                      <td class="val split">358.55</td><td class="val">0.0291</td><td class="val">0.5448</td>
+                      <td class="val split">345.62</td><td class="val">0.0389</td><td class="val">0.3101</td>
+                    </tr>
+                    <tr class="method-row alg2-row">
+                      <td class="method">Alg 2  improved</td>
+                      <td class="val split">302.72</td><td class="val">0.2732</td><td class="val">0.2530</td>
+                      <td class="val split">347.28</td><td class="val">0.0155</td><td class="val">0.2849</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

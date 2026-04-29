@@ -30,11 +30,13 @@ class Degradation(nn.Module):
 
     def blur_kernel(self, dim, std):
         return tgm.image.get_gaussian_kernel2d((dim, dim), (std, std))
-    def get_conv(self, std, kernel_size = None, padding_mode = "circular"):
+    def get_conv(self, std, kernel_size = None, padding_mode = "circular", index = None):
         if kernel_size is None:
             kernel_size = self.kernel_size
         if self.degradation_type == 'gaussian_noise':
             raise NotImplementedError
+        elif self.degradation_type == 'party':
+            return Party(strength=std/(self.num_timesteps*2), index=index)
         elif self.degradation_type == 'gaussian_blur':
             padding = (kernel_size - 1) // 2
             conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=kernel_size, padding=padding,
@@ -50,19 +52,19 @@ class Degradation(nn.Module):
         kernels = []
         for i in range(self.num_timesteps):
             if self.blur_routine == "Incremental":
-                kernels.append(self.get_conv(self.kernel_std * (i+1)))
+                kernels.append(self.get_conv(self.kernel_std * (i+1), index=i))
             elif self.blur_routine == "Exponential":
                 exp_std = np.exp(self.kernel_std * i)
-                kernels.append(self.get_conv(exp_std))
+                kernels.append(self.get_conv(exp_std, index=i))
             elif self.blur_routine == "Exponential_Reflect":
                 exp_std = np.exp(self.kernel_std * i)
-                kernels.append(self.get_conv(exp_std, padding_mode="reflect"))
+                kernels.append(self.get_conv(exp_std, padding_mode="reflect", index=i))
             elif self.blur_routine == "Constant":
-                kernels.append(self.get_conv(self.kernel_std))
+                kernels.append(self.get_conv(self.kernel_std, index=i))
             elif self.blur_routine == "Special6":
                 kernel_size = 11
                 kernel_std = i/100 + 0.35
-                kernels.append(self.get_conv(std=kernel_std, kernel_size=kernel_size, padding_mode="reflect"))
+                kernels.append(self.get_conv(std=kernel_std, kernel_size=kernel_size, padding_mode="reflect", index=i))
             else:
                 raise ValueError(f"unknown blur_routine: {self.blur_routine}")
         return kernels
@@ -99,3 +101,20 @@ class Degradation(nn.Module):
     
     def __str__(self):
         return f"{self.degradation_type} with {self.blur_routine} routine"
+    
+class Party(nn.Module):
+    """
+    Subtracts a single uniform random color from the entire image.
+    Approaches a pure black image as pixels hit the 0 threshold.
+    """
+    def __init__(self, strength=0.01, index=0):
+        super().__init__()
+        self.strength = strength
+        self.step_index = int(index) 
+
+    def forward(self, x):
+        device = x.device
+        gen = torch.Generator(device=device).manual_seed(self.step_index)
+        sub_color = torch.rand(1, 3, 1, 1, generator=gen, device=device) * self.strength
+        x = x - sub_color
+        return torch.clamp(x, 0, 1)

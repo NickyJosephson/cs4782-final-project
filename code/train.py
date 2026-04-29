@@ -15,7 +15,7 @@ DEGRADATION_CONFIGS= {
 }
 
 # main train loop
-def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", data_percent = 1, resume= False, device= None, discrete= False):
+def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accum_steps= 2, ema_decay= 0.995, ema_update_every= 10, log_every= 500, save_every= 5000, ckpt_dir= "../checkpoints", data_percent = 1, degradation_type = "gaussian_blur", resume= False, device= None, discrete= False):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[train] dataset= {dataset_name} device= {device}")
 
@@ -27,7 +27,7 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
             kernel_size= 27, num_timesteps= 300, kernel_std= 0.01, blur_routine= "Exponential"
         ))
     T = deg_cfg["num_timesteps"]
-    degradation= Degradation(**deg_cfg).to(device)
+    degradation= Degradation(**deg_cfg, degradation_type=degradation_type).to(device)
     model= build_unet(dataset_name).to(device)
     ema_model= copy.deepcopy(model)
 
@@ -38,7 +38,8 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
 
     #resume if needed
     suffix = "_gen" if discrete else ""
-    ckpt_path= pathlib.Path(ckpt_dir) / f"{dataset_name}{suffix}.pt"
+    degradation_suffix = f"_{degradation_type}" if degradation_type != "gaussian_blur" else ""
+    ckpt_path= pathlib.Path(ckpt_dir) / f"{dataset_name}{suffix}{degradation_suffix}.pt"
     start_step= 0
     loss_history= []
     if resume and ckpt_path.exists(): 
