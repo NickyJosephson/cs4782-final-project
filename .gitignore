@@ -3,4 +3,4 @@ code/tests/test_data/output
 notebooks/.ipynb_checkpoints
 data/raw
 .conda/
-.DS_Store
+.DS_Store.claude/

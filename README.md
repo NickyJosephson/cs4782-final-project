@@ -20,11 +20,14 @@ Metrics: **FID, SSIM, RMSE**. The key trend to reproduce: *Sampled* improves FID
 
 ```
 code/         U-Net, blur degradation, sampling (Alg 1/2), training, evaluation, generation
-data/         Dataset loaders (MNIST, CIFAR-10, CelebA)
+data/         Dataset loaders (MNIST, CIFAR-10, CelebA) + dataset README
 notebooks/    01_table1.ipynb     — Table 1 reproduction
               02_stability.ipynb  — Algorithm 1 vs 2 comparison
               train_*.ipynb       — training notebooks per dataset
-poster/       Poster PDF and source
+results/      Generated figures (drift curves, visual sample grids)
+poster/       cold_diffusion_poster.pdf + source
+report/       Final 2-page report PDF
+LICENSE       MIT
 requirements.txt
 ```
 
@@ -82,14 +85,14 @@ We reproduce the paper's qualitative trend: **Algorithm 2 sampling yields the lo
 
 | Dataset  | x₀ | D(x₀, T/2) | x_T | Direct | Alg 1 | Alg 2 |
 |----------|----|------------|-----|--------|-------|-------|
-| MNIST    | ![](poster/project/images/mnist/mnist_42_x0.png) | ![](poster/project/images/mnist/mnist_42_xT.png) | ![](poster/project/images/mnist/mnist_17_xT.png) | ![](poster/project/images/mnist/mnist_42_direct.png) | ![](poster/project/images/mnist/mnist_42_alg1.png) | ![](poster/project/images/mnist/mnist_42_alg2.png) |
-| CIFAR-10 | ![](poster/project/images/cifar10/cifar_17_x0.png) | ![](poster/project/images/cifar10/cifar_17_xHalf_v2.png) | ![](poster/project/images/cifar10/cifar_17_xT_v2.png) | ![](poster/project/images/cifar10/cifar_17_direct.png) | ![](poster/project/images/cifar10/cifar_17_alg1.png) | ![](poster/project/images/cifar10/cifar_17_alg2.png) |
+| MNIST    | ![](results/mnist/mnist_42_x0.png) | ![](results/mnist/mnist_42_xT.png) | ![](results/mnist/mnist_17_xT.png) | ![](results/mnist/mnist_42_direct.png) | ![](results/mnist/mnist_42_alg1.png) | ![](results/mnist/mnist_42_alg2.png) |
+| CIFAR-10 | ![](results/cifar10/cifar_17_x0.png) | ![](results/cifar10/cifar_17_xHalf_v2.png) | ![](results/cifar10/cifar_17_xT_v2.png) | ![](results/cifar10/cifar_17_direct.png) | ![](results/cifar10/cifar_17_alg1.png) | ![](results/cifar10/cifar_17_alg2.png) |
 
 **Drift over sampling — Algorithm 1 vs Algorithm 2 (RMSE vs ideal trajectory):**
 
 | MNIST | CIFAR-10 |
 |-------|----------|
-| ![MNIST drift curve](poster/project/images/mnist_drift_curve.png) | ![CIFAR-10 drift curve](poster/project/images/cifar10_drift_curve.png) |
+| ![MNIST drift curve](results/mnist_drift_curve.png) | ![CIFAR-10 drift curve](results/cifar10_drift_curve.png) |
 
 Algorithm 1 (red) drifts as restoration error compounds; Algorithm 2 (blue) stays close to the manifold at every degradation level on both datasets — confirming the compounding-error theory of §3.3.
 
