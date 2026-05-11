@@ -136,13 +136,6 @@ def get_dataset(name: DatasetName, split: Split, augment: bool = False,) -> Data
         base = datasets.MNIST(str(root), train=True, download=True, transform=_mnist_transform(augment=use_augment))
         train_idx, val_idx = _carve_val_indices(len(base))
         return Subset(base, train_idx if split == "train" else val_idx)
-    
-    if name == "mnist_original":
-        if split == "test":
-            return datasets.MNIST(str(root), train=False, download=True, transform=_mnist_transform(augment=False))
-        base = datasets.MNIST(str(root), train=True, download=True, transform=_mnist_transform(augment=False))
-        train_idx, val_idx = _carve_val_indices(len(base))
-        return Subset(base, train_idx if split == "train" else val_idx)
 
     if name == "cifar10":
         if split == "test":
@@ -177,14 +170,12 @@ def get_dataset(name: DatasetName, split: Split, augment: bool = False,) -> Data
 
 def get_loader(name: DatasetName, split: Split, batch_size: int, num_workers: int = 4, data_percent = 1.0, augment: bool = False, shuffle: Optional[bool] = None) -> DataLoader:
     ds = get_dataset(name, split, augment=augment)
-
     if data_percent < 1:
         n = len(ds)
         k = int(n * data_percent)
         g = torch.Generator().manual_seed(0)
         indices = torch.randperm(n, generator=g)[:k].tolist()
         ds = Subset(ds, indices)
-
     if shuffle is None:
         shuffle = split == "train"
     return DataLoader(

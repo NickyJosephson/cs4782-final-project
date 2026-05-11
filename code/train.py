@@ -4,8 +4,8 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from data.datasets import get_loader
-from model import build_unet
-from degradation import Degradation
+from src.model import build_unet
+from src.degradation import Degradation
 
 # config per dataset
 DEGRADATION_CONFIGS= {
@@ -129,6 +129,11 @@ def train (dataset_name, num_steps= 100_000, lr= 2e-5, batch_size= 32, grad_accu
     print(f"[train] done.")
 
     return loss_history
+
+        
+
+
+
 
         
 

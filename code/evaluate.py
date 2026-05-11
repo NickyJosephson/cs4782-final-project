@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.image import StructuralSimilarityIndexMeasure
-from sampling import algorithm1_sample, algorithm2_sample, direct_reconstruct
+from src.sampling import algorithm1_sample, algorithm2_sample, direct_reconstruct
 
 # helpers
 def to_uint8(x):

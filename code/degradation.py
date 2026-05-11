@@ -36,18 +36,22 @@ class Degradation(nn.Module):
         if self.degradation_type == 'gaussian_noise':
             raise NotImplementedError
         elif self.degradation_type == 'party':
-            return Party(strength=std/(self.num_timesteps*2), index=index)
+            return Party(strength=std/(self.num_timesteps*2), index=index, num_channels=self.image_channels)
+        elif self.degradation_type == 'gaussian_blur_focused':
+            blend_strength = 2*index / max(1, self.num_timesteps - 1)
+            return GaussianBlurFocused(std=std, kernel_size=kernel_size, strength=blend_strength,
+                                       image_channels=self.image_channels, padding_mode=padding_mode)
         elif self.degradation_type == 'gaussian_blur':
             padding = (kernel_size - 1) // 2
             conv_layer = nn.Conv2d(self.image_channels, self.image_channels, kernel_size=kernel_size, padding=padding,
                              groups=self.image_channels, bias=False, padding_mode=padding_mode) # Look into these params
-        with torch.no_grad():
-            kernel = self.blur_kernel(kernel_size, std)
-            kernel = torch.unsqueeze(kernel, 0)
-            kernel = torch.unsqueeze(kernel, 0)
-            kernel = kernel.repeat(self.image_channels, 1, 1, 1)
-            conv_layer.weight.data = kernel
-        return conv_layer
+            with torch.no_grad():
+                kernel = self.blur_kernel(kernel_size, std)
+                kernel = torch.unsqueeze(kernel, 0)
+                kernel = torch.unsqueeze(kernel, 0)
+                kernel = kernel.repeat(self.image_channels, 1, 1, 1)
+                conv_layer.weight.data = kernel
+            return conv_layer
     def get_kernels(self):
         kernels = []
         for i in range(self.num_timesteps):
@@ -102,19 +106,49 @@ class Degradation(nn.Module):
     def __str__(self):
         return f"{self.degradation_type} with {self.blur_routine} routine"
     
+class GaussianBlurFocused(nn.Module):
+    """
+    Spatially-adaptive Gaussian blur driven by local brightness.
+    Each pixel blends between the original and a blurred version using its
+    brightness as the blend weight:  alpha = brightness * strength
+    so brighter pixels get blurred more aggressively, darker ones less.
+    `strength` grows linearly from 0 → 1 over timesteps.
+    """
+    def __init__(self, std, kernel_size, strength, image_channels=3, padding_mode='reflect'):
+        super().__init__()
+        self.strength = float(strength)
+        padding = (kernel_size - 1) // 2
+        self.blur = nn.Conv2d(image_channels, image_channels, kernel_size=kernel_size,
+                              padding=padding, groups=image_channels, bias=False,
+                              padding_mode=padding_mode)
+        with torch.no_grad():
+            kernel = tgm.image.get_gaussian_kernel2d((kernel_size, kernel_size), (std, std))
+            kernel = kernel.unsqueeze(0).unsqueeze(0).repeat(image_channels, 1, 1, 1)
+            self.blur.weight.data = kernel
+        for p in self.blur.parameters():
+            p.requires_grad_(False)
+
+    def forward(self, x):
+        brightness = x.mean(dim=1, keepdim=True)
+        x_blurred = self.blur(x)
+        alpha = brightness * self.strength
+        return (1.0 - alpha) * x + alpha * x_blurred
+
+
 class Party(nn.Module):
     """
     Subtracts a single uniform random color from the entire image.
     Approaches a pure black image as pixels hit the 0 threshold.
     """
-    def __init__(self, strength=0.01, index=0):
+    def __init__(self, strength=0.01, index=0, num_channels=3):
         super().__init__()
         self.strength = strength
-        self.step_index = int(index) 
+        self.step_index = int(index)
+        self.num_channels = num_channels 
 
     def forward(self, x):
         device = x.device
         gen = torch.Generator(device=device).manual_seed(self.step_index)
-        sub_color = torch.rand(1, 3, 1, 1, generator=gen, device=device) * self.strength
+        sub_color = torch.rand(1, self.num_channels, 1, 1, generator=gen, device=device) * self.strength
         x = x - sub_color
         return torch.clamp(x, 0, 1)

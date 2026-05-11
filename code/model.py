@@ -35,6 +35,14 @@ _UNET_CONFIGS = {
         attention_resolutions=(16, 8),
         image_size=64,
     ),
+    "afhq": dict(                                          
+        in_channels=3,                                     
+        base_channels=64,                                  
+        channel_mults=(1, 2, 4, 8),                        
+        num_res_blocks=2,                                
+        attention_resolutions=(16, 8),                     
+        image_size=128,
+    ),
 }
 
 class PositionalEmbedding(nn.Module) : 
