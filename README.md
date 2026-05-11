@@ -113,6 +113,6 @@ This project was completed as the final project for **CS 4782: Introduction to D
 
 **Team:**
 - Julius Samwer (jcs557) — U-Net architecture
-- Kevin Rodriguez (kjr64) — Degradation operator
+- Kevin Rodriguez (kjr64) — Degradation
 - Nicky Josephson (noj5) — Datasets and data loading
 - Tudor Braicu (tb574) — Sampling, evaluation, generation
