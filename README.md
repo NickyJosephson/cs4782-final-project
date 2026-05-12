@@ -45,24 +45,24 @@ requirements.txt
 
 ## Reproduction Steps
 
-1. Clone the repo and install dependencies (Python 3.11+ recommended):
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Train a model (or open the corresponding notebook in `notebooks/`):
-   ```bash
-   python code/train.py --dataset mnist     # or cifar10 / celeba
-   ```
-3. Reproduce Table 1:
-   ```bash
-   jupyter notebook notebooks/01_table1.ipynb
-   ```
-4. Reproduce the stability comparison:
-   ```bash
-   jupyter notebook notebooks/02_stability.ipynb
-   ```
+All notebooks are designed to be run in **Google Colab** (no local setup required).
 
-**Compute:** All experiments were run on Google Colab Pro with a single A100 GPU. MNIST trains in around 10 hour; CIFAR-10 about 20h.
+1. Upload (or clone) this repo into your Google Drive — e.g. `MyDrive/cs4782-final-project`.
+2. Open a notebook in `notebooks/` with Colab (right-click → *Open with → Google Colaboratory*).
+3. In the first cell, the notebook mounts your Drive and `cd`s into the repo:
+   ```python
+   from google.colab import drive
+   drive.mount("/content/drive")
+   repo = "/content/drive/MyDrive/cs4782-final-project"   # ← edit if you uploaded elsewhere
+   %cd {repo}
+   ```
+   Update the `repo` path so it points to wherever you put the repo in your Drive.
+4. Run the notebooks top-to-bottom:
+   - `notebooks/train_mnist_focused.ipynb` / `train_cifar.ipynb` — train the models
+   - `notebooks/01_table1.ipynb` — reproduce Table 1
+   - `notebooks/02_stability.ipynb` — Algorithm 1 vs Algorithm 2 stability comparison
+
+**Compute:** All experiments were run on Google Colab Pro with a single A100 GPU. MNIST trains in around 10 hours; CIFAR-10 about 20h.
 
 ## Results / Insights
 
