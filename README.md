@@ -8,7 +8,7 @@ This repository is a re-implementation of **"Cold Diffusion: Inverting Arbitrary
 
 ## Chosen Result
 
-We target **Table 1, Section 4.1** of the paper — the deblurring quality comparison on MNIST, CIFAR-10, and CelebA across three conditions:
+We target **Table 1, Section 4.1** of the paper, the deblurring quality comparison on MNIST, CIFAR-10, and CelebA across three conditions:
 
 - **Degraded** — the blurry input (baseline)
 - **Direct** — one-shot reconstruction `R(D(x₀, T), T)`
@@ -79,7 +79,7 @@ requirements.txt
 | CIFAR-10 | Alg 1 naive iter.   | 96.42      | 0.5188      | 0.1205      | —           | —            | —            |
 | CIFAR-10 | **Alg 2 improved**  | **55.75**  | 0.6634      | 0.0826      | 80.08       | 0.7730       | 0.0750       |
 
-We reproduce the paper's qualitative trend: **Algorithm 2 sampling yields the lowest FID, while Direct reconstruction wins on pixel-wise SSIM / RMSE.** Absolute numbers differ from the paper because we trained for far fewer steps. The stability experiment clearly shows Algorithm 1 drifting and accumulating artifacts at long horizons, while Algorithm 2 remains stable — visible in the intermediate-step grids in `02_stability.ipynb`.
+We reproduce the paper's qualitative trend: **Algorithm 2 sampling yields the lowest FID, while Direct reconstruction wins on pixel-wise SSIM / RMSE.** Absolute numbers differ from the paper because we trained for far fewer steps. The stability experiment clearly shows Algorithm 1 drifting from the target trajectory at long horizons, while Algorithm 2 remains stable.
 
 **Forward → reverse visual comparison (Direct · Alg 1 · Alg 2):**
 
@@ -98,7 +98,7 @@ Algorithm 1 (red) drifts as restoration error compounds; Algorithm 2 (blue) stay
 
 ## Conclusion
 
-Re-implementing Cold Diffusion confirmed that noise is not special: a deterministic blur process is enough to train a generative restoration model. The biggest practical lessons were (1) the FID-vs-SSIM tradeoff between Direct and Sampled is robust even at low training budgets, and (2) Algorithm 2's fixed-point-style update is what makes long-horizon deblurring tractable — Algorithm 1 visibly degrades.
+Re-implementing Cold Diffusion confirmed that noise is not special: a deterministic blur process is enough to train a generative restoration model. The biggest practical lessons were (1) the FID-vs-SSIM tradeoff between Direct and Sampled is robust even at low training budgets, and (2) Algorithm 2's fixed-point-style update is what makes long-horizon deblurring tractable.
 
 ## References
 
