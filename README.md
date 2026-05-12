@@ -41,12 +41,12 @@ requirements.txt
 - **Training:** Adam, lr=2e-5, batch 32 with 2× gradient accumulation, L1 loss, EMA decay 0.995 (updated every 10 steps). Reduced to 100k steps from the paper's 700k due to compute.
 - **Sampling:** Both Algorithm 1 and Algorithm 2 implemented in `code/sampling.py`.
 - **Evaluation:** FID , SSIM, RMSE in `code/evaluate.py`.
-- **Challenges / Modifications:** Reduced training horizon and batch size for Colab Pro single-GPU runs; omitted Celeb A due to high resolution 128×128 due to compute issues.
+- **Challenges / Modifications:** Reduced training horizon and batch size for Colab Pro single-GPU runs; omitted Celeb  (128×128) due to larga data fromat leading to very slow training time.
 
 ## Reproduction Steps
 
 1. Clone the repo and install dependencies (Python 3.11+ recommended):
-   ```bash
+   ```bash 
    pip install -r requirements.txt
    ```
 2. Train a model (or open the corresponding notebook in `notebooks/`):
