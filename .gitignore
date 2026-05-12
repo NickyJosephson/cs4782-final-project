@@ -4,4 +4,3 @@ notebooks/.ipynb_checkpoints
 data/raw
 .conda/
 .DS_Store
-.claude/
